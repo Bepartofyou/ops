@@ -16,7 +16,10 @@ if(MSVC)
     endif(${flag_var} MATCHES "/MD")
   endforeach(flag_var)
 endif()
-set(CMAKE_EXE_LINKER_FLAGS "-static")
+
+if(NOT CMAKE_SYSTEM_NAME MATCHES "Darwin")
+    set(CMAKE_EXE_LINKER_FLAGS "-static")
+endif()
 
 option(USE_QUIC "quic" OFF)
 
@@ -39,7 +42,16 @@ if(WIN32)
 include_directories(third_party/lsquic/wincompat)
 endif()
 #查找线程库
-find_package(Threads)
+if(NOT CMAKE_SYSTEM_NAME MATCHES "Darwin")
+    find_package(Threads)
+else()
+    set(CMAKE_THREAD_LIBS_INIT "-lpthread")
+    set(CMAKE_HAVE_THREADS_LIBRARY 1)
+    set(CMAKE_USE_WIN32_THREADS_INIT 0)
+    set(CMAKE_USE_PTHREADS_INIT 1)
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
+    find_package(Threads REQUIRED)
+endif()
 
 #添加代码目录
 ADD_SUBDIRECTORY(third_party)
